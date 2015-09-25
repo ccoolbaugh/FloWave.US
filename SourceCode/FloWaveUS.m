@@ -16,6 +16,8 @@
 % Default Ultrasound Equipment: GE Logiq Book e
 % Default Video Equipment: Sony Multi-Functional DVD Recorder (VRD-MC6)
 %
+% version: 0.1.0
+%
 % Crystal Coolbaugh
 % July 30, 2015
 % Copyright 2015 Crystal Coolbaugh

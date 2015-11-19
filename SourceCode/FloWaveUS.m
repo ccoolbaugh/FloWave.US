@@ -11,12 +11,14 @@
 %            Jiro Doke) - See associated license agreements for copyright
 %            information, FigureLoopingFcn
 %
-% Toolbox Requirements: Signal Processing
-%
 % Default Ultrasound Equipment: GE Logiq Book e
 % Default Video Equipment: Sony Multi-Functional DVD Recorder (VRD-MC6)
 %
+<<<<<<< HEAD
+% version: 0.1.1
+=======
 % version: 0.1.0
+>>>>>>> master
 %
 % Crystal Coolbaugh
 % July 30, 2015
@@ -43,7 +45,7 @@ if PlatCal == 1
     disp('Loaded default settings')
 else
     PlatSetFile = input('Enter the platform calibration settings filename (e.g. Settings.mat)','s');
-    load PlatSetFile
+    load(PlatSetFile)
     disp('Loaded custom settings')
 end
 %% Identify Folder with Video
@@ -386,7 +388,7 @@ while ROICheck == 0
     if DiameterOption == 1
         % Create Diameter Time Vector
         dt = 1/VidSamRate;
-        DiamEndFrame = round(TimeFinal(end)*VidSamRate);
+        DiamEndFrame = nFrames; 
         DTime = (0:dt:DiamEndFrame*dt-dt)';
         
         % Enter diameter value
@@ -401,7 +403,7 @@ while ROICheck == 0
         ROIMark = [1;round(DRoiTime*VidSamRate)];
         
         % Set Vector Length to Match the Velocity Vector
-        DiamEndFrame = round(TimeFinal(end)*VidSamRate);
+        DiamEndFrame = nFrames; 
         DiameterPixel = zeros(DiamEndFrame,1);
         
         for k = 1:DiamEndFrame
@@ -540,8 +542,8 @@ for i = 1:length(Diam100)
 end
 
 % Smooth Time Series - Savitsky Golay Filter
-BloodFlowFilt = sgolayfilt(BloodFlow,3,15);
-SRFilt = sgolayfilt(Shear,3,15);
+BloodFlowFilt = sgolayfilt(BloodFlow,3,11);
+SRFilt = sgolayfilt(Shear,3,11);
 
 %% Cardiac Cycle Analysis
 % Identify the start/end of each cardiac cycle to determine the blood flow
@@ -593,8 +595,8 @@ while AnalyzeSuccess <= length(EpochTime)
                 
         % Savitsky Golay Filter 
         % Maintains amplitude of high frequency peaks for data extraction
-        BFFilt2 = sgolayfilt(BF,3,15);
-        SRFilt2 = sgolayfilt(SR,3,15);
+        BFFilt2 = sgolayfilt(BF,3,11);
+        SRFilt2 = sgolayfilt(SR,3,11);
         
         % Identify Systolic Peaks - Use Median Filtered Velocity Data
         PkCheck = 0;
@@ -683,19 +685,21 @@ while AnalyzeSuccess <= length(EpochTime)
         SRPeaks = SRFilt2(DblLocs);
         
         % DEFINE CARDIAC CYCLE FREQUENCY
-        % Calculate time between peaks. Exclude if non-phyiological (< 40bpm or > 240bpm)
+        % Calculate time between peaks. 
         
         RRInt = diff(Time100(DblLocs));
+        MeanRR = mean(RRInt);
         count = 1;
         
+        % Exclude if +/- 30% different from mean RR
         for i = 1:length(RRInt)
-            if (RRInt(i) <= 1.5) && (RRInt(i) >= 0.25)
+            if (RRInt(i) <= (MeanRR+.3*MeanRR)) && (RRInt(i) >= (MeanRR-.3*MeanRR))
                 RRIntKeep(count) = RRInt(i);
                 count = count + 1;
             end
         end
         
-        RRDur = mean(RRIntKeep);   % Average time of cardiac cycle
+        RRDur = mean(RRIntKeep);   % New mean for windowing 
             
         disp('Mean Cardiac Cycle Duration (seconds) is: ')
         disp(RRDur)
@@ -726,12 +730,7 @@ while AnalyzeSuccess <= length(EpochTime)
         SysTime = zeros(1,Size);    % Time in Systole
         DiasTime = zeros(1,Size);   % Time in Diastole
         OSI = zeros(1,Size);    % Oscillatory Shear Index
-        
-        % Validation Study Only
-        MBF3 = zeros(1,Size);   % Mean Blood Flow - Method 3
-        MVel = zeros(1,Size);   % TAMean Velocity
-        EndD = zeros(1,Size);   % Diameter @ end diastole
-        
+     
         for i = 1:numel(DblPeaks)
             
             % Create Time Window
@@ -785,10 +784,10 @@ while AnalyzeSuccess <= length(EpochTime)
             % Locate start of systole
             PtDiff = diff(WinBF);
             
-            % Assume start occurs within 0.2 s of Peak Systole 
-            % (20 datapoints) or start of window
-            if (PSVLoc - 20) >= 1
-                for j = (PSVLoc-20):PSVLoc
+            % Assume start occurs within 0.25 s of Peak Systole 
+            % (25 datapoints) or start of window
+            if (PSVLoc - 25) >= 1
+                for j = (PSVLoc-25):PSVLoc
                     if (PtDiff(j) >= 1.5) && ((j-1) >= 5)
                         Start = WinTime(j-1);
                         break
@@ -867,11 +866,8 @@ while AnalyzeSuccess <= length(EpochTime)
                 PDV(1,i) = 0;
             end
             EDV(1,i) = WinBF(EDVLoc);
-            
-            % Validation Study Only
-            EndD(1,i) = WinDiam(EDVLoc);
-            
-            % Claculate Slope and Oscillatory Shear Index
+   
+            % Calculate Slope and Oscillatory Shear Index
             Slope(1,i) = (WinBF(PSVLoc) - WinBF(ISVLoc))/(WinTime(PSVLoc) - WinTime(ISVLoc));
             OSI(1,i) = abs(min(WinSR))/(abs(max(WinSR))+abs(min(WinSR)));
         end
@@ -879,46 +875,67 @@ while AnalyzeSuccess <= length(EpochTime)
         % Assign End Diastole Values/Time Points
         % Based on Timepoints of the Initial Systole.
         ISVDiff = diff(ISVTime);    % Time between cardiac cycles
+        RRLim = .3*RRDur;           % Cardiac Cycle Limit (30% of Mean RR)
+        RRDurHigh = RRDur+RRLim; % Set High Cardiac Cyclic Limit
+        RRDurLow = RRDur-RRLim;  %Set Low Cardiac Cycle Limit
         
         for i = 1:(numel(DblPeaks)-1)
-            % Assign end of diastole as the next start of systole (only if
-            % gap between cardiac cycles is between 40 and 220 bpm).
-            % Otherwise, keep the end diastole as the end of the time
-            % window.
-            if (ISVDiff(i)<=1.5) && (ISVDiff(i)>= 0.25)
+            % Assign end of diastole as the next start of systole if
+            % gap between cardiac cycle limits else assign NaN
+            if (ISVDiff(i)<=RRDurHigh) && (ISVDiff(i)>= RRDurLow)
                 EDVTime(1,i) = ISVTime(1,i+1);
                 EDV(1,i) = ISV(1,i+1);
-            end 
+            else
+                EDV(1,i) = NaN;
+                EDVTime(1,i) = NaN;
+            end
         end
         
+        % Remove Gaps (NaNs) in the Data Set
+        ISV = ISV(~isnan(EDV));
+        ISVTime = ISVTime(~isnan(EDV));
+        PSV = PSV(~isnan(EDV));
+        PSVTime = PSVTime(~isnan(EDV));
+        PDV = PDV(~isnan(EDV));
+        PDVTime = PDVTime(~isnan(EDV));
+        EDV = EDV(~isnan(EDV));
+        EDVTime = EDVTime(~isnan(EDVTime));
+        Slope = Slope(~isnan(EDV));
+        SlopeTime = SlopeTime(~isnan(EDV));
+        OSI = OSI(~isnan(EDV));
+        
         % Calculate Mean BF weighted to time spent in systole & diastole
-        for i = 1:numel(DblPeaks)
+        for m = 1:numel(EDV)
             % Method 1: Mean of All BF from start to end of cardiac cycle
             % Method 2: Mean of BF weighted to time spent in systole & diastole
             % Systole
-            SysTime(1,i) = PSVTime(1,i) - ISVTime(1,i);
-            SysStart = find(Time100 == ISVTime(1,i));
-            SysEnd = find(Time100 == PSVTime(1,i));
+            SysTime(1,m) = PSVTime(1,m) - ISVTime(1,m);
+            SysStart = find(Time100 == ISVTime(1,m));
+            SysEnd = find(Time100 == PSVTime(1,m));
             
             % Diastole
-            DiasTime(1,i) = EDVTime(1,i) - PSVTime(1,i);
-            DiasEnd = find(Time100 == EDVTime(1,i));
+            DiasTime(1,m) = EDVTime(1,m) - PSVTime(1,m);
+            DiasEnd = find(Time100 == EDVTime(1,m));
             
             % Cardiac Cycle Period
             Period = Time100(SysStart:DiasEnd);
             
             % Method 1:
-            MBF1(1,i) = trapz(Period,BloodFlowFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart)));
+            MBF1(1,m) = trapz(Period,BloodFlowFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart)));
             
             % Method 2: 
-            MBF2(1,i) = SysTime(1,i)*(trapz(Period,BloodFlowFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart))))+ ...
-                DiasTime(1,i)*(trapz(Period,BloodFlowFilt(SysStart:DiasEnd)*(1/(Time100(DiasEnd)-Time100(SysStart)))));
-        
-            % Validation Study Only - Method 3
-            MVel(1,i) = trapz(Period,Vel100(SysStart:DiasEnd))*1/(Time100(DiasEnd)-Time100(SysStart));
-            MBF3(1,i) = MVel(1,i)*pi*(EndD(i)/2)^2*60;
+            MBF2(1,m) = SysTime(1,m)*(trapz(Period,BloodFlowFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart))))+ ...
+                DiasTime(1,m)*(trapz(Period,BloodFlowFilt(SysStart:DiasEnd)*(1/(Time100(DiasEnd)-Time100(SysStart)))));
         end
- 
+        
+        % Remove trailing zeros in SysTime, Diastime, MBF1, MBF2
+        if (numel(EDV) < numel(DblPeaks))
+            SysTime = SysTime(SysTime~=0);
+            DiasTime = DiasTime(DiasTime~=0);
+            MBF1 = MBF1(MBF1~=0);
+            MBF2 = MBF2(MBF2~=0);
+        end
+        
         % Store Peak Find Settings
         PkHtSet(k) = pkht_keep;
         PkWdSet(k) = pkwdth_keep;
@@ -971,12 +988,7 @@ while AnalyzeSuccess <= length(EpochTime)
             SysTime(1,i) = 0;
             DiasTime(1,i) = 0;
             OSI(1,i) = 0;
-            
-            % Validation Study Only
-            MBF3(1,i) = 0;
-            MVel(1,i) = 0;
-            EndD(1,i) = 0;
-            
+            RRIntKeep(1,i) = 0;
         end
         
          % Store Peak Find Settings
@@ -1017,11 +1029,7 @@ while AnalyzeSuccess <= length(EpochTime)
     S(k).DiasTime = DiasTime;
     S(k).Slope = Slope;
     S(k).OSI = OSI;
-    
-    % Validation Study Only
-    S(k).MBF3 = MBF3;
-    S(k).MVel = MVel;
-    S(k).EndD = EndD;
+    S(k).RRIntKeep = RRIntKeep;
     
     % Store time indices for points of interest
     S(k).ISVt = ISVTime;
@@ -1033,7 +1041,7 @@ while AnalyzeSuccess <= length(EpochTime)
     
     % Clear Variables to Avoid Overlap with Next Epoch
     clear BF SR OneTime BFFilt1 BFFilt2 SRFilt1 SRFilt2 peaks locs ...
-        DblPeaks DblLocs Fd locs_new peaks_new vel
+        RRIntKeep DblPeaks DblLocs Fd locs_new peaks_new vel
 
 end
 
@@ -1055,14 +1063,8 @@ AllDiasTime = [S(1,:).DiasTime];
 AllSlope = [S(1,:).Slope];
 AllSlopeTime = [S(1,:).Slopet];
 AllOSI = [S(1,:).OSI];
+AllRRIntKeep = [S(1,:).RRIntKeep];
 AllWindow = [S(1,:).Window];    
-
-% Validation Study Only
-AllMBF3 = [S(1,:).MBF3];
-AllMVel = [S(1,:).MVel];
-AllEndD = [S(1,:).EndD];
-
-
 
 % Plot Cardiac Cycle Points 
 figure, grid on, hold on;
@@ -1080,14 +1082,13 @@ subplot(2,1,1),plot(AllPSVTime,AllMBF1,'--ko','DisplayName','Mean','LineWidth',1
 plot(AllPSVTime,AllMBF2,'--ro','DisplayName','Weighted Mean','LineWidth',1.1,'MarkerEdgeColor','r','MarkerFaceColor','r','MarkerSize',4),title('Mean Blood Flow','FontSize',14),ylabel('Blood Flow (ml/min)'),legend('Mean','Weighted Mean'),hold off;
 subplot(2,1,2),plot(AllPSVTime,AllSysTime,'--bo','DisplayName','Systolic Time','LineWidth',1.1,'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize', 4),grid on,title('Systolic/Diastolic Time','FontSize',14),ylabel('Time (s)'), hold on;
 plot(AllPSVTime,AllDiasTime,'--go','DisplayName','Diastolic Time','LineWidth',1.1,'MarkerEdgeColor','g','MarkerFaceColor','g','MarkerSize', 4), xlabel('Time (s)', 'FontSize', 14),legend('Systolic', 'Diastolic'),hold off;
-axis tight;
 
 
 %% Write to File
 
 % Aggregate Cardiac Cycle Data  - Format for Validation Study Only
 AllData = [AllPSVTime',AllPSV',AllPDVTime',AllPDV',AllEDVTime',AllEDV', ...
-    AllISVTime',AllISV',AllMBF1',AllMBF2',AllMBF3',AllMVel',AllEndD',...
+    AllISVTime',AllISV',AllMBF1',AllMBF2',...
     AllSysTime',AllDiasTime',AllOSI',AllWindow'];
  
 % Aggregate Time Series Data
@@ -1097,7 +1098,7 @@ AllTimeSeries = [Time100',BloodFlow,BloodFlowFilt,Shear,SRFilt,Vel100',Diam100']
 SumName1 = input('Enter filename to write cyclic data (must include file extension ".csv"): ', 's');
 csvwrite(SumName1, AllData);
 
-disp('Data Format: PSVTime,PSV,PDVTime,PDV,EDVTime,EDV,ISVTime,ISV,MBF1,MBF2,MBF3,TAMean,Diameter,SysTime,DiasTime,OSI,WindowTime.');
+disp('Data Format: PSVTime,PSV,PDVTime,PDV,EDVTime,EDV,ISVTime,ISV,MBF1,MBF2,SysTime,DiasTime,OSI,WindowTime.');
 
 % Write processed time series data to file
 SumName2 = input('Enter filename to write time series data (must include file extension ".csv"): ','s');

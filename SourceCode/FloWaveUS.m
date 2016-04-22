@@ -1,25 +1,24 @@
 %% FloWaveUS - Ultrasound Blood Flow Analysis
 %
-% Purpose: This code was written to extract and analyze ultrasound 
-% B-mode and pulse wave data from an analog video recording. 
+% Purpose: Analysis of duplex ultrasound blood flow data from digital 
+%          screen captures.
 %
-% Inputs: Analog Video of Ultrasound Data - AVI (PC) or MOV (MAC) formats
-% Outputs: Blood flow data and operator settings exported to csv files.
+% Inputs: Digital Video of Ultrasound Data - AVI (PC) or MOV (MAC) formats
+% Outputs: Blood flow time series and cardiac cycle data to csv files.
 %
 % Functions: FrameCalibrate, GapInterpolate, VesselROI, AutoDiameter, 
 %            imgaussian (written by Dirk-Jan Kroon), ginputc (written by
 %            Jiro Doke) - See associated license agreements for copyright
 %            information, FigureLoopingFcn
 %
-% Default Ultrasound Equipment: GE Logiq Book e
-% Default Video Equipment: Sony Multi-Functional DVD Recorder (VRD-MC6)
+% Help: See Documentation on Github for instruction manuals and example
+% videos.
 %
-% version: 0.1.1
+% version: 0.2.1
 %
 % Crystal Coolbaugh
 % July 30, 2015
 % Copyright 2015 Crystal Coolbaugh
-
 %% Format Workspace
 clc
 clear
@@ -28,22 +27,13 @@ format compact;
 disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO PROCESS THE ULTRASOUND DATA.')
 
 %% Platform Calibration
-% If needed, the user can calibrate the program to the ultrasound screen
-% dimensions. The calibration will identify ROIs for the velocity, time,
-% and distance scales and the position of the pulse wave data. Selection of
-% the color profile for the zero velocity position and the TAMean are also
-% identified. 
+% Users should create a platform calibration file for each experimental
+% condition. The calibration ".mat" file can be created with
+% PlatformCalibration.m. 
 
-PlatCal = menu('Use default platform calibration settings?', 'Yes', 'No');
+PlatSetFile = input('Enter the ultrasound platform calibration settings filename (e.g. Settings.mat): ', 's');
+load(PlatSetFile)
 
-if PlatCal == 1
-    load GELogiqBookeDefault.mat
-    disp('Loaded default settings')
-else
-    PlatSetFile = input('Enter the platform calibration settings filename (e.g. Settings.mat)','s');
-    load(PlatSetFile)
-    disp('Loaded custom settings')
-end
 %% Identify Folder with Video
 % Add video folder to the current path
 disp('Choose the file directory that contains the US video.');
@@ -51,8 +41,10 @@ DirName = uigetdir; % Open browser to identify directory path
 addpath(DirName);
 ls(DirName) % List file contents for easy copy-paste of filename
 
-%% Import AVI Video Data
-% Import an avi video file of the analog US data. 
+%% Import Digital Video Data
+% The digital video format depends on the video compression settings
+% available in MATLAB. PC systems can use .avi or .mov formats. MAC systems
+% will need to use .mov formats. 
 
 % Enter the Video Filename
 VideoName = input('Type the video filename and extension (e.g. USvideo.avi): ','s');
@@ -60,8 +52,8 @@ VideoName = input('Type the video filename and extension (e.g. USvideo.avi): ','
 % Construct a reader object using VideoReader function
 USObj = VideoReader(VideoName);
 
-% ACQUIRE VIDEO SETTINGS: May Vary for Different US or DVD equipment
-% Set Image Frame Size 
+% Set Image Frame Size - NOTE: Digital video resolution should match the
+% platform calibration resolution to ensure proper scaling of pixel data.
 VidHeight = USObj.Height;
 VidWidth = USObj.Width;
 
@@ -74,12 +66,12 @@ VidSamRate = USObj.FrameRate;
 % Video End Time
 Duration = USObj.Duration;
 
-% Display a Single Video Frame for Visual Inspection of Sweep Speed, Time,
-% Velocity, and Distance Calibration Scales
+% Display a Single Video Frame for Visual Inspection of Doppler sweep speed,
+% Velocity, Time, and Distance scales
 OneFrame = read(USObj,1);
 image(OneFrame)
 axis image
-title('Identify Max Time Range & Calibration Scales', 'FontSize', 16);
+title('Identify Doppler display sweep speed (max time range) & Calibration Scales', 'FontSize', 16);
 disp('Inspect the image to identify the time scale, velocity scale, and diameter scale increments');
 
 % Set the # of Frames per Screen Update for the US - Varies with Sweep Speed  
@@ -134,21 +126,20 @@ while ScaleCheck == 0
     DistCon = FrameCalibrate(DistScale);
     
     % Calibration Check
-    CalCheck = input('Do you need to repeat calibrations (Y/N)? ','s');
+    CalCheck = input('Were calibrations performed correctly?(Y/N)? ','s');
     
-    if lower(CalCheck) == 'n'
+    if lower(CalCheck) == 'y'
         ScaleCheck = 1;
     end
 end
-
 %% Identify Video Start Frame
 % The ultrasound video should be edited with an external program so that
 % the pulse wave data on the initial start frame of the video represents a
 % complete update of data. To account for errors with editing, the user is
-% presented an animation of the start of the video with the inidivudal
+% presented an animation of the start of the video with the individual
 % frame numbers. The user can press the  spacebar to stop the animation at
 % the correct start frame. 
-
+ 
 disp('An animation of the video frames will be displayed.')
 disp('Press the spacebar to stop the video at the desired start frame (i.e. a full pulse wave update).')
 disp('Paused. Press any key to continue.')
@@ -171,7 +162,7 @@ while ~StartCheck
     end
 end
 
-%% Extract Pulse Wave Data
+%% Pulse Wave Data Extraction 
 % For all frames in the video, this code a) defines an ROI for the pulse
 % wave data, b) extracts the time average mean data (calculated teal line),
 % c) extracts the max doppler envelope (TAMax), and e) scales 
@@ -183,120 +174,169 @@ end
 % Create Loop for Batch Processing
 count = 1; % Count the # of Screen Updates
 
+% Select Velocity Extraction Method - TAMean or Raw
+VelType = menu('Extract the calculated TAMean or the raw Doppler spectrum?', 'TAMean', 'Raw');
+
 for k = StartFrame:FramesPerPeriod:nFrames
     
-    % Restrict Video Data to Pulse Wave ROI
-    % ROI position may vary based on the screen resolution of the US
-    % Default: 640 x 480 screen size
+    % Restrict Video Data to Pulse Wave ROI - defined in platform
+    % calibration
     vidframe = read(USObj,k);
-    ROI(:,:,:) = vidframe(PWy(1):PWy(2),PWx(1):PWx(2),:); 
-        
-    % Extract Time Average Mean Data
-    % Teal Pixels defined by Red/Green & Red/Blue Ratio: 
-    % Default Settings: Low = 0.25 & High = 0.7
-    % [RGB] of the TAMean line may need to be adjusted for different
-    % equipment - Use PlatformCalibration.m to determine the system
-    % settings.
-    TealLow = 0.25; 
-    TealHigh = 0.7;
+    ROI(:,:,:) = vidframe(PWy(1):PWy(2),PWx(1):PWx(2),:);
     
-    % Allocate memory for data extraction
-    TAMeanData = zeros(PWHeight,PWLength,1);
-    ROI_db=double(ROI);     % Recast ROI as type double to prevent overflow
-    
-    % For all pixels in ROI, keep teal pixels and convert to intensity
-    for i = 1:PWHeight
-        for j = 1:PWLength
-            if ((ROI_db(i,j,1)/ROI_db(i,j,2) <= TealHigh) && ...
-                    (ROI_db(i,j,1)/ROI_db(i,j,2) >= TealLow) && ...
-                    (ROI_db(i,j,1)/ROI_db(i,j,3) <= TealHigh) && ...
-                    (ROI_db(i,j,1)/ROI_db(i,j,3) >= TealLow))
-                
-            I = 1/3*(ROI_db(i,j,1)+ROI_db(i,j,2)+ROI_db(i,j,3));
-            TAMeanData(i,j,:) = I;
-            end
-        end
-    end
-    
-    % Extract Doppler Data - Max/Min Velocity
-    % For all pixels in ROI, keep gray pixels 
-    RawData = zeros(PWHeight,PWLength,1);
-    
-    % Threshold for Gray Pixels (RGB must be within threshold)
-    % Default = 7
-    thresh = 7;           
-    for i = 10:(PWHeight - 10)  %Adjust for borders to prevent detection of time scale
-        for j = 1:PWLength
-           if (abs(ROI_db(i,j,1) - ROI_db(i,j,2)) <= thresh) && (abs(ROI_db(i,j,1)...
-                    -ROI_db(i,j,3))<= thresh)
-                I2 = 1/3*(ROI_db(i,j,1)+ROI_db(i,j,2)+ROI_db(i,j,3));
-                RawData(i,j,:) = I2;
-           end
-        end
-    end
-    
-    % Convert Pixels to TAMean and Max Velocity
+    % Allocate Storage for Velocity Data
     VelValue = zeros(1,PWLength);
-    MaxVelValue = zeros(1,PWLength);
-    
     MaxI = zeros(1,PWLength);
     VelPos = zeros(1,PWLength);
     
-    % Find maximum intensity within TAMean Data and convert position to a
-    % [time, velocity] data point
-    for i = 1:PWLength
-        % Find Max Intensity per Column
-        MaxI(1,i) = max(TAMeanData(:,i));
+    if VelType == 1
+        %Recast ROI as type double
+        ROI_db = double(ROI);
         
-        if MaxI(1,i) > 30
-            VelIndex = find(TAMeanData(:,i) == MaxI(1,i));
+        % Extract Time Average Mean Data
+        % Teal Pixels defined by Red/Green & Red/Blue Ratio:
+        % Default Settings: Low = 0.25 & High = 0.7
+        % [RGB] of the TAMean line may need to be adjusted for different
+        % equipment - Use PlatformCalibration.m to determine the system
+        % settings.
+        
+        % Allocate memory for data extraction
+        TAMeanData = zeros(PWHeight,PWLength,1);
+        
+        % For all pixels in ROI, keep teal pixels and convert to intensity
+        for i = 1:PWHeight
+            for j = 1:PWLength
+                if ((ROI_db(i,j,1)/ROI_db(i,j,2) <= TealHigh) && ...
+                        (ROI_db(i,j,1)/ROI_db(i,j,2) >= TealLow) && ...
+                        (ROI_db(i,j,1)/ROI_db(i,j,3) <= TealHigh) && ...
+                        (ROI_db(i,j,1)/ROI_db(i,j,3) >= TealLow))
+                    
+                    I = 1/3*(ROI_db(i,j,1)+ROI_db(i,j,2)+ROI_db(i,j,3));
+                    TAMeanData(i,j,:) = I;
+                end
+            end
+        end
+        
+        % Find maximum intensity within TAMean Data and convert position to a
+        % [time, velocity] data point
+        for i = 1:PWLength
+            % Find Max Intensity per Column
+            MaxI(1,i) = max(TAMeanData(:,i));
             
-            VelPos(1,i) = median(VelIndex); % Median accounts for multiple maximum
-            VelValue(1,i) = (BaseY1 - VelPos(1,i))*VelCon;
-        else
-            VelValue(1,i) = 200;    % Mark missing data for interpolation
+            if MaxI(1,i) > 30   %Default threshold for Intensity = 30; Lower intensity values add noise
+                VelIndex = find(TAMeanData(:,i) == MaxI(1,i));
+                
+                VelPos(1,i) = median(VelIndex); % Median accounts for multiple maximum
+                VelValue(1,i) = (BaseY1 - VelPos(1,i))*VelCon;
+            else
+                VelValue(1,i) = 200;    % Mark missing data for interpolation
+            end
         end
-    end
-    
-    % Find Raw Data value  >= 10. Use first position of this value and
-    % convert to [time, maxvel] data point
-    for i = 1:PWLength
-        TaMaxThresh = 10;       % Intensity value must be at least 10
-        MaxI2 = find(RawData(:,i) >= TaMaxThresh);   
-        if MaxI2 ~= 0
-            MaxVelValue(1,i) = (BaseY1 - MaxI2(1))*VelCon;
-        else
-            MaxVelValue(1,i) = 200;
+
+         % Add Data to Array
+         VelAll(:,count) = VelValue';
+         
+    else
+        % Extract Doppler Envelope Data - grayscale threshold (GrayThresh
+        % set in PlatformCalibration.m)
+        % For all pixels in ROI, keep gray pixels
+        RawData = zeros(PWHeight,PWLength,1);
+                
+        % Mask velocity baseline to prevent noise in velocity envelope
+        BaseMask = 2;
+        ROI((BaseY1-BaseMask:BaseY1+BaseMask),:,:) = 0;
+        
+        %Recast ROI as type double
+        ROI_db = double(ROI);
+        
+        % Threshold for Gray Pixels (RGB must be within threshold)
+        for i = 1:PWHeight
+            for j = 1:PWLength
+                if (abs(ROI_db(i,j,1) - ROI_db(i,j,2)) <= GrayThresh) && (abs(ROI_db(i,j,2)...
+                        -ROI_db(i,j,3)) <= GrayThresh)
+                    I = 1/3*(ROI_db(i,j,1)+ROI_db(i,j,2)+ROI_db(i,j,3));
+                    
+                    RawData(i,j,:) = I;
+                end
+            end
         end
+        
+        % Assign Velocity Pixel Positions
+        for i = 1:PWLength
+            % Filter Noisy Pixels
+            IntIndex = find(RawData(:,i) >= 10);
+            
+            %Calculated intensity weighted mean and mean velocity values.
+            %Weighted mean is currently an exploratory measure. 
+            if IntIndex ~= 0
+                % Calculate Intensity Weighted Mean Position
+                PixelVec = (1:length(IntIndex))';
+                VelVec = RawData(IntIndex,i);
+                WtMeanPixel = round(sum(PixelVec.*VelVec)./sum(VelVec));
+                WtMeanPos(1,i) = IntIndex(WtMeanPixel);
+                
+                % Calculate Intensity Weighted Mean Velocity
+                WtMeanVelValue(1,i) = (BaseY1 - WtMeanPos(1,i))*VelCon;
+                
+                % Calculate Velocity Envelope
+                for j = 1:length(IntIndex)
+                    VelIndex(j,1) = (BaseY1 - IntIndex(j,1))*VelCon;
+                end
+                
+                % Assign Max/Min/Mean Velocities
+                MaxVelValue(1,i) = max(VelIndex);
+                MinVelValue(1,i) = min(VelIndex);
+                MeanVelValue(1,i) = mean(VelIndex);
+            else
+                % Mark missing data for interpolation
+                WtMeanVelValue(1,i) = 0;
+                MeanVelValue(1,i) = 0;
+                MaxVelValue(1,i) = 200;
+                MinVelValue(1,i) = -200;
+            end
+            
+            %Calculate Pulse Wave Spectrum Envelope
+            EnvelopeVel(1,i) = MaxVelValue(1,i) + MinVelValue(1,i);
+            
+            % Reset Index 
+            clear IntIndex VelIndex
+        end
+        
+         % Add Data to Array
+         MeanVelAll(:,count) = MeanVelValue';
+         WtMeanVelAll(:,count) = WtMeanVelValue';
+         EnvelopeVelAll(:,count) = EnvelopeVel';
     end
-    
-    % Add Data to Array
-    VelAll(:,count) = VelValue';
-    MaxVelAll(:,count) = MaxVelValue';
     
     % Increment Total Frame Count
     TotalFrameCount = count;
     count = count + 1;
     
-    % Clear variables to avoid overlap with next image - added 1/30/15
-    clear TAMeanData RawData 
-    
+    % Clear variables to avoid overlap with next image
+    clear TAMeanData RawData I 
+ 
 end
 
 %% Create Composite Pulse-Wave Data
 % Calls GapInterpolate function - replaces errant marker ("200") with
 % linear interpolated velocity values.
 
-% Reshape Velocity Vectors
-VelFinal = reshape(VelAll,numel(VelAll),1);
-MaxVelFinal = reshape(MaxVelAll,numel(MaxVelAll),1);
-
-% Time Vector
-TimeFinal = (0:TimeCon:numel(VelAll)*TimeCon-TimeCon);
-
-% Correct Missing Data Gaps
-VelInterp = GapInterpolate(VelFinal,TimeFinal,TimeCon);
-MaxVelInterp = GapInterpolate(MaxVelFinal, TimeFinal, TimeCon);
+% Reshape Velocity Vectors & Correct Missing Data Gaps
+if VelType == 1
+    TimeFinal = (0:TimeCon:numel(VelAll)*TimeCon-TimeCon);  %Time Vector
+    VelFinal = reshape(VelAll,numel(VelAll),1);
+    VelInterp = GapInterpolate(VelFinal,TimeFinal,TimeCon);
+else
+    TimeFinal = (0:TimeCon:numel(MeanVelAll)*TimeCon-TimeCon); % Time Vector
+    MeanVelFinal = reshape(MeanVelAll,numel(MeanVelAll),1);
+    VelInterp = GapInterpolate(MeanVelFinal,TimeFinal,TimeCon);
+    EnvelopeVelFinal = reshape(EnvelopeVelAll,numel(EnvelopeVelAll),1);
+    MaxVelInterp = GapInterpolate(EnvelopeVelFinal,TimeFinal,TimeCon);
+    
+    % Calculate Intensity-Weighted Mean (Exploratory Analysis)
+    WtMeanVelFinal = reshape(WtMeanVelAll,numel(WtMeanVelAll),1);
+    WtMeanVelInterp = GapInterpolate(WtMeanVelFinal,TimeFinal,TimeCon);
+end
 
 %% Define Data Epochs (VesselROI, AutoDiameter, imgaussian functions)
 % The user interactively selects the end of data epochs (e.g. resting,
@@ -335,7 +375,6 @@ while ROICheck == 0
             
             if ~isempty(EHigh)
                 EMean = VelInterp(ELow(1):EHigh(1));
-                EMax = MaxVelInterp(ELow(1):EHigh(1));
                 ETime = TimeFinal(ELow(1):EHigh(1));
                 
                 % Display Selected Epoch
@@ -413,26 +452,24 @@ while ROICheck == 0
                     ROIChoice = menu('Select an ROI?','Yes', 'No');
                     if ROIChoice == 1
                         Contraction = 0;
-                        [DROIx,DROIy,Center,Mask,theta] = VesselROI(Vessel);
+                        [DROIx,DROIy,Center,theta] = VesselROI(Vessel);
                     else
                         Contraction = 1; % No vessel measurement during contraction
                     end
                 end
             end
-            
+                 
             if Contraction == 0
                 % Restrict image to ROI
                 DiameterImage = Vessel(DROIy(1,1):DROIy(2,1),...
                     DROIx(1,1):DROIx(2,1));
-                % Mask Doppler gate
-                DiameterImage((Center(1)-round((Mask/2))):(Center(1)+round((Mask/2))),:)=0;
                 % Calculate the Diamter
                 DiameterPixel(k,1) = AutoDiameter(DiameterImage,Center',theta(1));
             else
                 DiameterPixel(k,1) = 0;
             end
         end
-        
+                
         % Replace Gaps and Errant Values with Mean Diameter
         MeanD = mean(DiameterPixel(intersect(find(DiameterPixel~= 200),find(DiameterPixel~=0))));
         DiffD = diff(DiameterPixel(find(DiameterPixel~=0)))/MeanD;
@@ -508,7 +545,8 @@ FsNew = 100;    % New Sampling Rate
 FsD = VidSamRate;   % Current Diameter Sampling Rate
 FsV = 1/TimeCon;    % Current Velocity Sampling Rate
 
-% Set Endpoint for New Time Vector
+% Set Endpoint for New Time Vector - Removes possible artifact at end of
+% diameter time series due to epoch selection
 if DTime(end) < TimeFinal(end)
     TEnd = DTime(end);
 else
@@ -520,7 +558,6 @@ Time100 = linspace(0,TEnd,TEnd*FsNew);
 
 % Resample Diameter and Velocity Vectors
 Vel100 = interp1(TimeFinal,VelInterp,Time100);
-MaxVel100 = interp1(TimeFinal,MaxVelInterp,Time100);
 Diam100 = interp1(DTime,DFilt,Time100);
 %% Calculate Blood Flow and Shear Rate
 
@@ -529,16 +566,16 @@ BloodFlow = zeros(length(Diam100),1);
 Shear = zeros(length(Diam100),1);
 
 for i = 1:length(Diam100)
-    BloodFlow(i,1) = Vel100(i)*pi*(Diam100(i)/2)^2*60;
+    BloodFlow(i,1) = Vel100(i)*pi*(Diam100(i)/2)^2*60;  %ml/min
     if Diam100(i) ~= 0 
-        Shear(i,1) = (4*MaxVel100(i))/Diam100(i);
+        Shear(i,1) = (4*Vel100(i))/Diam100(i);          %s^-1
     else
         Shear(i,1) = 0;
     end
 end
 
-% Smooth Time Series - Savitsky Golay Filter
-BloodFlowFilt = sgolayfilt(BloodFlow,3,11);
+% Smooth Time Series - Savitsky Golay Filter - remove noise 
+BFFilt = sgolayfilt(BloodFlow,3,11);
 SRFilt = sgolayfilt(Shear,3,11);
 
 %% Cardiac Cycle Analysis
@@ -557,7 +594,7 @@ while AnalyzeSuccess <= length(EpochTime)
         break
     end
     
-    % Partition Blood Flow and Shear Data according to Epochs
+    % Partition Filtered Blood Flow and Shear Data according to Epochs
     IndexE = find(Time100<=DRoiTime(k));
     EpochEnd(k,1) = IndexE(end);
     
@@ -567,8 +604,8 @@ while AnalyzeSuccess <= length(EpochTime)
         EpochStart = EpochEnd((k-1),1);
     end
     
-    BF = BloodFlow(EpochStart:EpochEnd(k,1));
-    SR = Shear(EpochStart:EpochEnd(k,1));
+    BF = BFFilt(EpochStart:EpochEnd(k,1));
+    SR = SRFilt(EpochStart:EpochEnd(k,1));
     Vel = Vel100(EpochStart:EpochEnd(k,1));
     Diam = Diam100(EpochStart:EpochEnd(k,1));
     OneTime = Time100(EpochStart:EpochEnd(k,1));
@@ -585,15 +622,10 @@ while AnalyzeSuccess <= length(EpochTime)
     if analyze == 1
         
         % Smooth Artifacts for Peak Detect
-        w = 16;     % Level of Smoothing - Increase if using Cine Loop Playback which may cause aliasing
+        w = 16;     % Level of Smoothing 
         smooth = (ones(1,w) / w)';
         VelFilt1 = conv(Vel,smooth,'same');
                 
-        % Savitsky Golay Filter 
-        % Maintains amplitude of high frequency peaks for data extraction
-        BFFilt2 = sgolayfilt(BF,3,11);
-        SRFilt2 = sgolayfilt(SR,3,11);
-        
         % Identify Systolic Peaks - Use Median Filtered Velocity Data
         PkCheck = 0;
         pkht = 20;  % Minimum vertical height for each peak; Default = 20 cm/s
@@ -615,7 +647,7 @@ while AnalyzeSuccess <= length(EpochTime)
             
             if lower(QTest) == 'y'
                 pkht_keep = pkht;
-                pkht = 10;
+                pkht = 20;
                 close all;
                 PkCheck = 1;
             else
@@ -675,10 +707,10 @@ while AnalyzeSuccess <= length(EpochTime)
         
         % Find Peak Locations Filtered Data - Blood Flow and Shear Rate
         BFLocs = DblLocs;
-        BFPeaks = BFFilt2(DblLocs);
+        BFPeaks = BFFilt(DblLocs);
         
         SRLocs = DblLocs;
-        SRPeaks = SRFilt2(DblLocs);
+        SRPeaks = SRFilt(DblLocs);
         
         % DEFINE CARDIAC CYCLE FREQUENCY
         % Calculate time between peaks. 
@@ -737,8 +769,8 @@ while AnalyzeSuccess <= length(EpochTime)
             Right = find(OneTime <= ((Center+WinDur) + 1/FsNew));
             
             WinTime = OneTime(Left(1):Right(end));
-            WinBF = BFFilt2(Left(1):Right(end));
-            WinSR = SRFilt2(Left(1):Right(end));
+            WinBF = BFFilt(Left(1):Right(end));
+            WinSR = SRFilt(Left(1):Right(end));
             WinVel = Vel(Left(1):Right(end));
             WinDiam = Diam(Left(1):Right(end));
             
@@ -847,6 +879,7 @@ while AnalyzeSuccess <= length(EpochTime)
                         AnalyzeSuccess = AnalyzeSuccess + 1;
                     else
                         break
+                        disp('Repeat analysis with new peak find settings.')
                     end
                 end
             else
@@ -904,7 +937,7 @@ while AnalyzeSuccess <= length(EpochTime)
         for m = 1:numel(EDV)
             % Method 1: Mean of All BF from start to end of cardiac cycle
             % Method 2: Mean of BF weighted to time spent in systole & diastole
-            % Systole
+            % Systole (Exploratory Analysis)
             SysTime(1,m) = PSVTime(1,m) - ISVTime(1,m);
             SysStart = find(Time100 == ISVTime(1,m));
             SysEnd = find(Time100 == PSVTime(1,m));
@@ -917,11 +950,11 @@ while AnalyzeSuccess <= length(EpochTime)
             Period = Time100(SysStart:DiasEnd);
             
             % Method 1:
-            MBF1(1,m) = trapz(Period,BloodFlowFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart)));
+            MBF1(1,m) = trapz(Period,BFFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart)));
             
             % Method 2: 
-            MBF2(1,m) = SysTime(1,m)*(trapz(Period,BloodFlowFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart))))+ ...
-                DiasTime(1,m)*(trapz(Period,BloodFlowFilt(SysStart:DiasEnd)*(1/(Time100(DiasEnd)-Time100(SysStart)))));
+            MBF2(1,m) = SysTime(1,m)*(trapz(Period,BFFilt(SysStart:DiasEnd))*(1/(Time100(DiasEnd)-Time100(SysStart))))+ ...
+                DiasTime(1,m)*(trapz(Period,BFFilt(SysStart:DiasEnd)*(1/(Time100(DiasEnd)-Time100(SysStart)))));
         end
         
         % Remove trailing zeros in SysTime, Diastime, MBF1, MBF2
@@ -1036,7 +1069,7 @@ while AnalyzeSuccess <= length(EpochTime)
     S(k).Window = EDVTime - ISVTime;    
     
     % Clear Variables to Avoid Overlap with Next Epoch
-    clear BF SR OneTime BFFilt1 BFFilt2 SRFilt1 SRFilt2 peaks locs ...
+    clear BF SR OneTime peaks locs ...
         RRIntKeep DblPeaks DblLocs Fd locs_new peaks_new vel
 
 end
@@ -1074,11 +1107,9 @@ legend('Peak Systole','Diastole','End Diastole')
 
 % Plot Mean Blood Flow
 figure, axis tight; 
-subplot(2,1,1),plot(AllPSVTime,AllMBF1,'--ko','DisplayName','Mean','LineWidth',1.1,'MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize', 4),grid on,hold on;
-plot(AllPSVTime,AllMBF2,'--ro','DisplayName','Weighted Mean','LineWidth',1.1,'MarkerEdgeColor','r','MarkerFaceColor','r','MarkerSize',4),title('Mean Blood Flow','FontSize',14),ylabel('Blood Flow (ml/min)'),legend('Mean','Weighted Mean'),hold off;
-subplot(2,1,2),plot(AllPSVTime,AllSysTime,'--bo','DisplayName','Systolic Time','LineWidth',1.1,'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize', 4),grid on,title('Systolic/Diastolic Time','FontSize',14),ylabel('Time (s)'), hold on;
-plot(AllPSVTime,AllDiasTime,'--go','DisplayName','Diastolic Time','LineWidth',1.1,'MarkerEdgeColor','g','MarkerFaceColor','g','MarkerSize', 4), xlabel('Time (s)', 'FontSize', 14),legend('Systolic', 'Diastolic'),hold off;
-
+plot(AllPSVTime,AllMBF1,'k','DisplayName','Mean Blood Flow','LineWidth', 1.1, 'MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize', 4), grid on;
+xlabel('Time (s)', 'FontSize', 14),
+ylabel('Mean Blood Flow (ml/min', 'FontSize', 14),
 
 %% Write to File
 
@@ -1088,7 +1119,7 @@ AllData = [AllPSVTime',AllPSV',AllPDVTime',AllPDV',AllEDVTime',AllEDV', ...
     AllSysTime',AllDiasTime',AllOSI',AllWindow'];
  
 % Aggregate Time Series Data
-AllTimeSeries = [Time100',BloodFlow,BloodFlowFilt,Shear,SRFilt,Vel100',Diam100'];
+AllTimeSeries = [Time100',BloodFlow,BFFilt,Shear,SRFilt,Vel100',Diam100'];
 
 % Write processed cyclic data to file
 SumName1 = input('Enter filename to write cyclic data (must include file extension ".csv"): ', 's');
@@ -1110,8 +1141,3 @@ AnalysisSet = [PkHtSet', PkWdSet', RRDurKeep', PeakCount',DRoiTime,VelCal',TimeC
 csvwrite(SumName3,AnalysisSet);
 
 disp('Analysis Settings Format: Peak Height Threshold, Peak Width Threshold, Cycle Duration, Peak Count, EpochEndTime, Velocity Calibration, Time Calibration, Distance Calibration, Zero Velocity Row Position');
-
-
-
-        
-

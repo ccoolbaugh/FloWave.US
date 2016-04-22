@@ -1,7 +1,6 @@
 %% BMode
-%
 % Purpose: This code was written to analyze ultrasound (US) B-mode images
-% from an analog video recording. The code uses an automated diameter 
+% from a digital video recording. The code uses an automated diameter 
 % subroutine to determine a blood vessel diameter. 
 %
 % Inputs: Ultrasound Video (type - '.avi' or '.mov')
@@ -12,10 +11,6 @@
 % license agreements for copyright information.
 %
 % Requires MATLAB R2012 or newer.
-%
-% US Equipment: GE Logiq Book e
-% Video Equipment: Sony Multi-Functional DVD Recorder (VRD-MC6)
-% Video Conversion: VBO to AVI (PC) or MOV (MAC)
 %
 % Crystal Coolbaugh
 % August 4, 2015
@@ -29,22 +24,14 @@ close all
 disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO PROCESS THE ULTRASOUND DATA.')
 
 %% Platform Calibration
-% If needed, the user can calibrate the program to the ultrasound screen
-% dimensions. The calibration will identify ROIs for the velocity, time,
-% and distance scales and the position of the pulse wave data. Selection of
-% the color profile for the zero velocity position and the TAMean are also
-% identified. 
+% Users should create a platform calibration file for each experimental
+% condition. The calibration ".mat" file can be created with
+% PlatformCalibration.m. 
 
-PlatCal = menu('Use default platform calibration settings?', 'Yes', 'No');
+PlatSetFile = input('Enter the ultrasound platform calibration settings filename for a BMode screen (e.g. Settings.mat): ', 's');
+load(PlatSetFile)
+disp('NOTE: Use of Duplex platform calibration settings may result in incorrect placement of the calibration scales.')
 
-if PlatCal == 1
-    load GELogiqBookeDefault.mat
-    disp('Loaded default settings')
-else
-    PlatSetFile = input('Enter the platform calibration settings filename (e.g. Settings.mat)','s');
-    load PlatSetFile
-    disp('Loaded custom settings')
-end
 %% Identify Folder with Video
 % Add video folder to the current path
 disp('Choose the file directory that contains the US video.');
@@ -108,16 +95,13 @@ for k = 1:nFrames
     if k == 1
         %Select ROI around the vessel 
         figure; imagesc(Vessel);
-        [DROIx,DROIy,Center,Mask,theta] = VesselROI(Vessel);
+        [DROIx,DROIy,Center,theta] = VesselROI(Vessel);
     end
     
     % Restrict image area to ROI
     DiameterImage = Vessel(DROIy(1,1):DROIy(2,1),...
         DROIx(1,1):DROIx(2,1));
-    
-    % Mask Doppler gate
-    DiameterImage((Center(1)-round((Mask/2))):(Center(1)+round((Mask/2))),:)=0;
-    
+        
     %Calculate the Diameter
     DiameterPixel(k,1) = AutoDiameter(DiameterImage,Center',theta(1));
 end
@@ -172,6 +156,5 @@ legend('Diameter');
 pause;
 
 DistCon
-Mask
 theta
 MeanDiam

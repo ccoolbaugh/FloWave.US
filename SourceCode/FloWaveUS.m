@@ -14,7 +14,7 @@
 % Help: See Documentation on Github for instruction manuals and example
 % videos.
 %
-% version: 0.2.1
+% version: 0.2.0
 %
 % Crystal Coolbaugh
 % July 30, 2015

@@ -26,7 +26,7 @@ disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO PROCESS THE ULTRASOUND DATA.')
 %% Platform Calibration
 % Users should create a platform calibration file for each experimental
 % condition. The calibration ".mat" file can be created with
-% PlatformCalibration.m. 
+% UsSetup.m. 
 
 PlatSetFile = input('Enter the ultrasound platform calibration settings filename for a BMode screen (e.g. Settings.mat): ', 's');
 load(PlatSetFile)
@@ -156,5 +156,4 @@ legend('Diameter');
 pause;
 
 DistCon
-theta
 MeanDiam

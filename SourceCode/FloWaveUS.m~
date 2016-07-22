@@ -879,10 +879,15 @@ while AnalyzeSuccess <= length(EpochTime)
                     %}
                 elseif i == numel(DblPeaks)                
                         AnalyzeSuccess = AnalyzeSuccess + 1;
+                    else
+                        break
+                        disp('Repeat analysis with new peak find settings.')
+                    end
                 end
             else
                 AnalyzeSuccess = AnalyzeSuccess+1;
             end
+            %}
             
             % Store Points of Interest for Each Cycle
             ISV(1,i) = WinBF(ISVLoc);

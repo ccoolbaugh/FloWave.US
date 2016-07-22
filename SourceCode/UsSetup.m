@@ -20,7 +20,7 @@ clc
 clear
 close all;
 format compact;
-disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO CREATE THE CALIBRATION FILE.')
+disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO CREATE THE UsSetup FILE.')
 
 %% Identify Folder with Video
 % Add video folder to the current path
@@ -158,7 +158,7 @@ if VideoType == 1
         figure;
         image(FrameOne);
         
-        disp('Define the Pulse Wave Data (magenta) ROI');
+        disp('Define the TAMean Velocity Data (magenta) ROI');
         disp('Click on 1. the upper left and 2. the lower right corners of the ROI');
         disp('The ROI should include the full dynamic range of the Pulse Wave Data');
         
@@ -180,7 +180,7 @@ if VideoType == 1
         close all;
         
         %ROI Check
-        ROITest2 = input('Was the pulse wave data selected correctly (Y/N)?','s');
+        ROITest2 = input('Was the TAMean velocity data selected correctly (Y/N)?','s');
         if lower(ROITest2) == 'y'
             PulseWave = 1;
         end
@@ -192,7 +192,7 @@ end
 % Doppler pulse wave spectrum. 
 
 if VideoType == 1
-    ZeroCheck = input('Do you need to define a color code for the zero velocity line in the pulse wave data? (y/n): ','s');
+    ZeroCheck = input('Do you need to define a color code for the zero velocity line (baseline position) in the pulse wave data? (y/n): ','s');
     
     if lower(ZeroCheck) == 'y'
         PulseZero = 0;
@@ -236,10 +236,10 @@ end
 %Set the RGB or grayscale threshold to extract the auto-calculation TAMean
 %overlay or the raw Doppler pulse wave spectrum. 
 if VideoType == 1
-    PulseWaveCheck = input('Do you need to define a color for the pulse wave data? (y/n): ', 's');
+    PulseWaveCheck = input('Do you need to define a color for the TAMean velocity data? (y/n): ', 's');
     
     if lower(PulseWaveCheck) == 'y'
-        VelType = menu('Extract the calculated TAMean or the raw Doppler spectru?', 'TAMean', 'Raw');
+        VelType = menu('Extract the calculated TAMean or the raw Doppler spectrum?', 'TAMean', 'Raw');
         
         if VelType == 1
             GrayThresh = 0;

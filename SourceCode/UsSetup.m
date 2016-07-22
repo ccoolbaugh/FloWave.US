@@ -64,18 +64,18 @@ if VideoType == 1
     while ~CalScale
         figure;
         image(FrameOne);
-        title('Define the Scale ROI: Velocity(Red), Time(Green), Distance(Yellow)')
+        title('Define the Scale ROI: Velocity(Green), Time(Red), Distance(Yellow)')
         
-        disp('Define the Velocity (Red), Time (Green), and Distance (Yellow) Scale ROI')
+        disp('Define the Velocity (Green), Time (Red), and Distance (Yellow) Scale ROI')
         disp('Click on 1. the upper left and 2. the lower right corners')
         
         %Red Cursor Select
-        [VelX,VelY] =  ginputc(2,'Color','r', 'LineWidth',2);
+        [VelX,VelY] =  ginputc(2,'Color','g', 'LineWidth',2);
         VelX = floor(VelX);
         VelY = floor(VelY);
         
         %Green Cursor Select
-        [TimeX,TimeY] = ginputc(2,'Color','g', 'LineWidth',2);
+        [TimeX,TimeY] = ginputc(2,'Color','r', 'LineWidth',2);
         TimeX = floor(TimeX);
         TimeY = floor(TimeY);
         

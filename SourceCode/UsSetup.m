@@ -1,4 +1,4 @@
-%% Platform Calibration - Ultrasound Calibration for FloWaveUS program
+%% UsSetup - Ultrasound Calibration for FloWaveUS program
 %
 % Purpose: This code creates calibration settings for the postion of the
 % ultrasound scales, the color of the pulse wave baseline, and the color of
@@ -51,7 +51,7 @@ VidSamRate = USObj.FrameRate;
 Duration = USObj.Duration;
 
 % Video Type (BMode or Duplex)
-VideoType = input('Choose the type of screen capture for calibration (BMode = 0; Duplex = 1): ');
+VideoType = input('Choose the type of screen capture for setup (BMode = 0; Duplex = 1): ');
 
 %% Set Scale Position ROIs
 %Set the screen positions for the velocity, distance, and time calibration

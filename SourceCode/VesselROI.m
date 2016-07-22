@@ -31,7 +31,7 @@ while VesselCheck == 0
     X=floor(X);
     Y=floor(Y);
     Center = [X Y]';
-    pause(0.2);
+    pause(0.5);
     close all;
     
     % Select Vessel Wall Angle
@@ -43,8 +43,8 @@ while VesselCheck == 0
     AngleOpp = X(1) - X(2);
     AngleAdj = abs(size(ICen,1) - 1);
     theta = [atand(AngleOpp/AngleAdj);1];
-    plot(X,Y,'g','LineWidth',3);
-    pause(0.5);
+    %plot(X,Y,'g','LineWidth',3);
+    %pause(0.5);
     close all;
     
     % Repeat Point Selection if Needed

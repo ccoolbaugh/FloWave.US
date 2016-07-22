@@ -14,7 +14,7 @@
 % Help: See Documentation on Github for instruction manuals and example
 % videos.
 %
-% version: 0.2.0
+% version: 0.2.1
 %
 % Crystal Coolbaugh
 % July 30, 2015
@@ -31,7 +31,7 @@ disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO PROCESS THE ULTRASOUND DATA.')
 % condition. The calibration ".mat" file can be created with
 % PlatformCalibration.m. 
 
-PlatSetFile = input('Enter the ultrasound platform calibration settings filename (e.g. Settings.mat): ', 's');
+PlatSetFile = input('Enter the ultrasound setup filename (e.g. Settings.mat): ', 's');
 load(PlatSetFile)
 
 %% Identify Folder with Video
@@ -141,7 +141,7 @@ end
 % the correct start frame. 
  
 disp('An animation of the video frames will be displayed.')
-disp('Press the spacebar to stop the video at the desired start frame (i.e. a full pulse wave update).')
+disp('Press the spacebar to stop the video when the update of the pulse wave data is at the far right side of the screen (i.e. a full pulse wave update).')
 disp('Paused. Press any key to continue.')
 pause;
 
@@ -345,7 +345,7 @@ end
 % ultrasound probe can also be identified for removal. 
 
 % Identify the Epoch Boundaries
-disp('Click on the pulse wave data to define sections of the experiment. Press enter when finished.')
+disp('Click on the pulse wave data to define sections (epochs) of the experiment. Press enter when finished.')
 EpochCheck = 0;
 ROICheck = 0;
 
@@ -433,6 +433,9 @@ while ROICheck == 0
         ROICheck = 1;
         disp('Advancing to Cycle Analysis')
     elseif DiameterOption == 2
+        
+        % WARNING: Automated diameter is still a beta-version analysis
+        disp('WARNING: Automated measurement of the vessel diameter is a BETA analysis.')
         
         % Create Fiducial Markers for Epochs - Define Vessel ROI at start of Each Epoch
         ROIMark = [1;round(DRoiTime*VidSamRate)];
@@ -852,6 +855,7 @@ while AnalyzeSuccess <= length(EpochTime)
             EDVt = find(Time100 == WinTime(EDVLoc));
             EDVTime(1,i) = Time100(EDVt);
             
+            %{
             % Quality Check - Three Cycles
             % If points are poorly selected, a new frequency should be
             % used and analysis repeated. 
@@ -885,6 +889,7 @@ while AnalyzeSuccess <= length(EpochTime)
             else
                 AnalyzeSuccess = AnalyzeSuccess+1;
             end
+            %}
             
             % Store Points of Interest for Each Cycle
             ISV(1,i) = WinBF(ISVLoc);

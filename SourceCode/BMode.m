@@ -23,15 +23,6 @@ clc
 close all
 disp('PLEASE FOLLOW THE ON-SCREEN PROMPTS TO PROCESS THE ULTRASOUND DATA.')
 
-%% Platform Calibration
-% Users should create a platform calibration file for each experimental
-% condition. The calibration ".mat" file can be created with
-% UsSetup.m. 
-
-PlatSetFile = input('Enter the ultrasound platform calibration settings filename for a BMode screen (e.g. Settings.mat): ', 's');
-load(PlatSetFile)
-disp('NOTE: Use of Duplex platform calibration settings may result in incorrect placement of the calibration scales.')
-
 %% Identify Folder with Video
 % Add video folder to the current path
 disp('Choose the file directory that contains the US video.');
@@ -66,14 +57,21 @@ Duration = USObj.Duration;
 % interest: distance. Position of the scales may need to be adjusted for
 % different US equipment or screen resolutions. 
 
+%Identify position of the distance scale
 OneFrame = read(USObj, 1);
+image(OneFrame); colormap gray
+title('Define a large ROI around the distance scale (click 1: upper left corner; click 2: lower right corner)');
+[X,Y] = ginputc(2, 'Color', 'r', 'LineWidth', 2);
+ScaleX = floor(X);
+ScaleY = floor(Y);
+close all;
 
 ScaleCheck = 0;
 disp('Use the cursor to select the scale range (lower & upper extremes).')
 
 while ScaleCheck == 0
     % Set Distance Conversion Factor
-    DistScale = OneFrame(DistY(1):DistY(2),DistX(1):DistX(2),:);
+    DistScale = OneFrame(ScaleY(1,1):ScaleY(2,1),ScaleX(1,1):ScaleX(2,1));
     DistCon = FrameCalibrate(DistScale);
     
     % Calibration Check

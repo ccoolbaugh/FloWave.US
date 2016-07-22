@@ -18,7 +18,7 @@ function Conversion = FrameCalibrate(I)
 
 % Display Scale
 figure;
-image(I);
+image(I); axis image; colormap gray
 
 title('Scale Calibration', 'FontSize', 16)
 

@@ -855,6 +855,9 @@ while AnalyzeSuccess <= length(EpochTime)
             EDVt = find(Time100 == WinTime(EDVLoc));
             EDVTime(1,i) = Time100(EDVt);
             
+            % Advance to Next Epoch
+            AnalyzeSuccess = AnalyzeSuccess+1;
+            
             %{
             % Quality Check - Three Cycles
             % If points are poorly selected, a new frequency should be

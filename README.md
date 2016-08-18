@@ -51,7 +51,7 @@ Have an idea for *FloWave.US*? Found a bug? Please file an [issue](https://githu
 
 If you report a bug, please include the following details:  
 * *FloWave.US* version number (e.g v.0.2.0)
-* Context Information - what you were trying to do when the bug happened (screen shots are very helpful)?
+* Context Information - what you were trying to do when the bug happened? (screen shots can be very helpful)
 * Steps to Reproduce the Error - does the error continue to happen in a repeatable manner?
 
 ## Contributing
@@ -61,7 +61,7 @@ By contributing your code, you agree to license your contribution under the term
 
 ## License
 * *FloWave.US* is license under the MIT [license](https://github.com/ccoolbaugh/FloWave.US/blob/master/LICENSE "License").  
-* Third-party software (ginputc.m and imgaussian.m) are used according to their respective license aggrements.   
+* Third-party software (ginputc.m and imgaussian.m) are used according to their respective license agreements.   
 
 ## Remarks
 Thank you for your interest in *FloWave.US*. We hope the program continues to improve and become a community effort to provide high quality, efficient, and inexpensive data processing solutions for ultrasound blood flow research. 

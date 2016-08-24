@@ -14,11 +14,11 @@
 % Help: See Documentation on Github for instruction manuals and example
 % videos.
 %
-% version: 0.2.1
+% version: 0.2.2
 %
 % Crystal Coolbaugh
 % July 30, 2015
-% Copyright 2015 Crystal Coolbaugh
+% Copyright 2015-2016 Crystal Coolbaugh
 %% Format Workspace
 clc
 clear
@@ -772,8 +772,8 @@ while AnalyzeSuccess <= length(EpochTime)
             Right = find(OneTime <= ((Center+WinDur) + 1/FsNew));
             
             WinTime = OneTime(Left(1):Right(end));
-            WinBF = BFFilt(Left(1):Right(end));
-            WinSR = SRFilt(Left(1):Right(end));
+            WinBF = BF(Left(1):Right(end));
+            WinSR = SR(Left(1):Right(end));
             WinVel = Vel(Left(1):Right(end));
             WinDiam = Diam(Left(1):Right(end));
             

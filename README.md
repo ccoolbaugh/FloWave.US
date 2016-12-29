@@ -1,10 +1,16 @@
 # FloWave.US
 FloWave.US is a MATLAB program for automated ultrasound blood flow analysis. FloWave.US extracts blood velocity and vessel diameter from ultrasound screen captures, giving researchers the flexibility to calculate a variety of vascular health parameters. 
 
+## Tutorial Video
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=lehANYDmxTY
+" target="_blank"><img src="http://img.youtube.com/vi/lehANYDmxTY/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+For more in depth tutorials and instructions please visit the [wiki](https://github.com/ccoolbaugh/FloWave.US/wiki).
+
 ## Resources
 - [Journal of Applied Physiology Reference] (http://jap.physiology.org/content/121/4/849 "Journal of Applied Physiology Reference")
-- [Instruction Manual] (https://github.com/ccoolbaugh/FloWave.US/tree/master/Documentation "Instructions") (Wiki coming soon)
-- [Example Videos] (https://github.com/ccoolbaugh/FloWave.US/tree/master/Demo "Demo Videos")
+- [Example Ultrasound Recordings] (https://github.com/ccoolbaugh/FloWave.US/tree/master/Demo "Demo Videos")
 - [Release Notes] (https://github.com/ccoolbaugh/FloWave.US/releases "Release Notes")
 - [Getting Started with MATLAB] (http://www.mathworks.com/help/matlab/getting-started-with-matlab.html "MATLAB Help")
 

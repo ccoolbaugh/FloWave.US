@@ -47,7 +47,7 @@ If you have any installation problems, please file an [issue] (https://github.co
 *  **Removal of On-Screen Calculations/Markings**: on-screen calculations (e.g. cardiac cycle gates) should be turned off during the video recording to avoid obstructing the view of the B-Mode or duplex image.  
 
 ## Running the Demo Videos
-We have provided [demo videos] (https://github.com/ccoolbaugh/FloWave.US/tree/master/Demo "Demo") to ensure the *FloWave.US* source code works on your computer:  
+We have provided [example ultrasound video recordings] (https://github.com/ccoolbaugh/FloWave.US/tree/master/Demo "Demo") to ensure the *FloWave.US* source code works on your computer:  
 * **DemoMuscleContraction.mov**: duplex ultrasound video recorded in the lower leg during a 1-s muscle contraction experiment - a test case for the main *FloWaveUS.m* program or to practice creating ultrasound screen setting files with *UsSetup.m*.  
 * **DemoBMode.mov**: B-Mode ultrasound video recorded in the upper arm at rest - a test case for the vessel diameter measurement program *BMode.m*.  
 * **GELogiqBookeDefault.mat**: ultrasound screen settings file for a General Electric Logiq Book e ultrasound scanner - this file is needed to analyze the muscle contraction demo video. 
@@ -66,11 +66,11 @@ We also encourage community members to write code - you can do so through GitHub
 By contributing your code, you agree to license your contribution under the terms of the MIT License. 
 
 ## License
-* *FloWave.US* is license under the MIT [license](https://github.com/ccoolbaugh/FloWave.US/blob/master/LICENSE "License").  
+* *FloWave.US* is licensed under the MIT [license](https://github.com/ccoolbaugh/FloWave.US/blob/master/LICENSE "License").  
 * Third-party software (ginputc.m and imgaussian.m) are used according to their respective license agreements.   
 
 ## Remarks
-Thank you for your interest in *FloWave.US*. We hope the program continues to improve and become a community effort to provide high quality, efficient, and inexpensive data processing solutions for ultrasound blood flow research. 
+Thank you for your interest in *FloWave.US*. We hope the program continues to improve and becomes a community effort to provide high quality, efficient, and inexpensive data processing solutions for ultrasound blood flow research. 
 
 If you find *FloWave.US* useful in your research, please consider citing the following:  
 

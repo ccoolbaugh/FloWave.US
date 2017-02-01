@@ -74,4 +74,4 @@ Thank you for your interest in *FloWave.US*. We hope the program continues to im
 
 If you find *FloWave.US* useful in your research, please consider citing the following:  
 
-1. C.L. Coolbaugh, E.C. Bush, C.F. Caskey, B.M. Damon, and T.F. Towse, "FloWave.US: a validated, open source, and flexible software for ultrasound blood flow analysis," *J Appl Physiol*, p. jap.00819.2015; **DOI**: 10.1152/japplphysiol.00819.2015
+1. Coolbaugh, Crystal L., Bush, Emily C., Caskey, Charles F., Damon, Bruce M., and Towse, Theodore F., "FloWave. US: validated, open-source, and flexible software for ultrasound blood flow analysis." Journal of Applied Physiology 121.4 (2016): 849-857.

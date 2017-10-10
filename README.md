@@ -57,10 +57,11 @@ We have provided [example ultrasound video recordings](https://github.com/ccoolb
 ## Questions / Feedback?
 Have an idea for *FloWave.US*? Found a bug? Please file an [issue](https://github.com/ccoolbaugh/FloWave.US/issues "Bug Reports") on GitHub. 
 
-If you report a bug, please include the following details:  
+If you create an issue, a template is provided to help guide discussion. It includes the following details:  
 * *FloWave.US* version number (e.g v.0.2.0)
-* Context Information - what you were trying to do when the bug happened? (screen shots can be very helpful)
+* Context Information - what you were trying to do when the bug happened? what actually happened? (screen shots can be very helpful)
 * Steps to Reproduce the Error - does the error continue to happen in a repeatable manner?
+* Other details about the FloWave.US setup (e.g. operating system, version of Matlab, ultrasound hardware).
 
 ## Contributing
 We also encourage community members to contribute to this project. Please read the [contributing guidelines](https://github.com/ccoolbaugh/FloWave.US/blob/master/CONTRIBUTING.md "Contributing") to learn more. 

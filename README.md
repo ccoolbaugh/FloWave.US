@@ -63,9 +63,7 @@ If you report a bug, please include the following details:
 * Steps to Reproduce the Error - does the error continue to happen in a repeatable manner?
 
 ## Contributing
-We also encourage community members to write code - you can do so through GitHub by forking the respository and sending a pull request. When submitting code, please try to follow existing conventions and style to keep the code readable.
-
-By contributing your code, you agree to license your contribution under the terms of the MIT License. 
+We also encourage community members to contribute to this project. Please read the [contributing guidelines](https://github.com/ccoolbaugh/FloWave.US/blob/master/CONTRIBUTING.md "Contributing") to learn more. 
 
 ## License
 * *FloWave.US* is licensed under the MIT [license](https://github.com/ccoolbaugh/FloWave.US/blob/master/LICENSE "License").  

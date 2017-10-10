@@ -64,7 +64,9 @@ If you create an issue, a template is provided to help guide discussion. It incl
 * Other details about the FloWave.US setup (e.g. operating system, version of Matlab, ultrasound hardware).
 
 ## Contributing
-We also encourage community members to contribute to this project. Please read the [contributing guidelines](https://github.com/ccoolbaugh/FloWave.US/blob/master/CONTRIBUTING.md "Contributing") to learn more. 
+We also encourage community members to contribute to this project. Please read the [contributing guidelines](https://github.com/ccoolbaugh/FloWave.US/blob/master/CONTRIBUTING.md "Contributing") to learn more about how you can help.
+
+Please be aware that we support a positive social environment for the FloWave.US community. As such, community members are expected to adhere to the project's [code of conduct](https://github.com/ccoolbaugh/FloWave.US/blob/master/CODE_OF_CONDUCT.md "Code of Conduct") to facilitate constructive, collaborative behavior. 
 
 ## License
 * *FloWave.US* is licensed under the MIT [license](https://github.com/ccoolbaugh/FloWave.US/blob/master/LICENSE "License").  

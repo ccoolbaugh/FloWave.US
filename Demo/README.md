@@ -32,8 +32,7 @@ Ultrasound Equipment: General Electric (GE) LOGIQ Book e, 12L-RS wide-band linea
 
 Video Files:
 1. **Demo_FMD.mov** - duplex ultrasound data acquired during a flow mediated dilation (FMD) experiment. 
-2. **FMDtest_Settings.mat** - ultrasound screen settings file used to calibrate *FloWave.US* to the on-screen markings.
-
+2. **GELogiqBookeDefault.mat** - ultrasound screen settings file used to calibrate *FloWave.US* to the on-screen markings.  
 
 ### Want to Help Grow the FloWave.US Community? 
 If you've tested *FloWave.US* using different experimental conditions or ultrasound equipment, please let us know. We would love to hear how you are using the code and if you would be interested in sharing sample data with the community.   

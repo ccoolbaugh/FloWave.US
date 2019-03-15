@@ -56,13 +56,9 @@ We have provided [example ultrasound video recordings](https://github.com/ccoolb
 * **GELogiqBookeDefault.mat**: ultrasound screen settings file for a General Electric Logiq Book e ultrasound scanner - this file is needed to analyze the muscle contraction demo video. 
 
 ## Questions / Feedback?
-Have an idea for *FloWave.US*? Found a bug? Please file an [issue](https://github.com/ccoolbaugh/FloWave.US/issues "Bug Reports") on GitHub. 
+Have an idea for *FloWave.US*? Found a bug? Please file an [issue](https://github.com/ccoolbaugh/FloWave.US/issues "Bug Reports") on GitHub.  
 
-If you create an issue, a template is provided to help guide discussion. It includes the following details:  
-* *FloWave.US* version number (e.g v.0.2.0)
-* Context Information - what you were trying to do when the bug happened? what actually happened? (screen shots can be very helpful)
-* Steps to Reproduce the Error - does the error continue to happen in a repeatable manner?
-* Other details about the FloWave.US setup (e.g. operating system, version of Matlab, ultrasound hardware).
+If you create an issue, templates are provided to report bugs and request features. Please be sure to include other context (e.g. ultrasound hardware, video recording equipment) if reporting a problem with the code.        
 
 ## Contributing
 We also encourage community members to contribute to this project. Please read the [contributing guidelines](https://github.com/ccoolbaugh/FloWave.US/blob/master/CONTRIBUTING.md "Contributing") to learn more about how you can help.

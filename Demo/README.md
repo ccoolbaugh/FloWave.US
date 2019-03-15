@@ -5,16 +5,16 @@ We have provided examples of different ultrasound recordings to help you get sta
 
 ## Example Ultrasound Videos
 
-#### Resting Blood Flow
+### Resting Blood Flow
 Experiment: duplex ultrasound data were recorded in real-time in the brachial artery at rest.   
-Ultrasound Equipment: General Electric (GE) LOGIQ Book e, 8-MHz linear array vascular probe (model 8L-RS).  
+Ultrasound Equipment: General Electric (GE) LOGIQ Book e, 8-MHz linear array vascular probe (model 8L-RS).
 
 Video Files:
 1. **DemoBMode.mov** - B-mode ultrasound data of the brachial artery  
   *Note: This file can be used to test the *BMode* vessel diameter measurement code.     
 2. **GELogiqBookeDefault.mat** - ultrasound screen settings file used to calibrate *FloWave.US* to the on-screen markings.  
   
-#### Muscle Contraction Blood Flow  
+### Muscle Contraction Blood Flow
 Experiment: duplex ultrasound data were recorded in real-time in the anterior tibial artery during a 1-s, maximal effort dorsiflexion task.        
 Ultrasound Equipment: General Electric (GE) LOGIQ Book e, 8-MHz linear array vascular probe (model 8L-RS)    
 
@@ -25,7 +25,7 @@ Video Files:
   *Note: This video recording was obtained from a different research participant and will not be comparable to the TAMean data.   
 3. **GELogiqBookeDefault.mat** - ultrasound screen settings file used to calibrate *FloWave.US* to the on-screen markings.   
   
-#### Flow Mediated Dilation  
+### Flow Mediated Dilation
 Experiment: duplex ultrasound data were recorded in the superficial femoral artery following 5 minutes of cuff occlusion.  
 Ultrasound Equipment: General Electric (GE) LOGIQ Book e, 12L-RS wide-band linear array probe, 5-13 mHz  
 **Credit:** Many thanks to Megan C Nelson at the University of Idaho for sharing this video.
@@ -34,7 +34,7 @@ Video Files:
 1. **Demo_FMD.mov** - duplex ultrasound data acquired during a flow mediated dilation (FMD) experiment. 
 2. **GELogiqBookeDefault.mat** - ultrasound screen settings file used to calibrate *FloWave.US* to the on-screen markings.  
 
-### Want to Help Grow the FloWave.US Community? 
+### Want to Help Grow the FloWave.US Community?
 If you've tested *FloWave.US* using different experimental conditions or ultrasound equipment, please let us know. We would love to hear how you are using the code and if you would be interested in sharing sample data with the community.   
 
 
@@ -51,7 +51,6 @@ If you have not used MATLAB before, we recommend reviewing some of the links and
 MATLAB uses a search path to locate files. For FloWave.US to work correctly, all of the source code must be added to this search path. If a folder, subfolder, or file is not on the search path, MATLAB will return an error message ... "undefined function or variable XX".    
 
 You can check to see if a folder is on the search path by looking at the "Current Folder" panel in the MATLAB desktop. Folders on the path will be in **bold** text. Folders *not* on the path will be in gray text. You can right-click on a folder in the "Current Folder" panel and use the menu option "Add to Path" to add the folder and subfolders to the search path, but note, these selected folders will resset when MATLAB is closed.  
-
 
 ## Need Help?
 If you have problems running the code with these videos, please submit an [issue](https://github.com/ccoolbaugh/FloWave.US/issues "Bug Reports") on GitHub so we can help. 

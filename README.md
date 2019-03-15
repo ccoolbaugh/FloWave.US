@@ -48,6 +48,7 @@ If you have any installation problems, please file an [issue](https://github.com
   * Windows 7 or later: AVI or MOV  
   * Macintosh: MOV only  
 *  **Removal of On-Screen Calculations/Markings**: on-screen calculations (e.g. cardiac cycle gates) should be turned off during the video recording to avoid obstructing the view of the B-Mode or duplex image.  
+* **Real-Time Video**: video recordings of previously captured data (e.g. cine loops) can cause artifacts or missed frames when reading the video file into FloWave.US. It is possible to analyze these types of data, but it can be a challenge to account for errors. For best results, we recommend recording the ultrasound screen in real-time to a file during an experiment.  
 
 ## Running the Demo Videos
 We have provided [example ultrasound video recordings](https://github.com/ccoolbaugh/FloWave.US/tree/master/Demo "Demo") to ensure the *FloWave.US* source code works on your computer:  

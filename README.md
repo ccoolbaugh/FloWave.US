@@ -6,7 +6,7 @@ FloWave.US is a MATLAB program for automated ultrasound blood flow analysis. Flo
 ## Tutorials 
 Please visit the [wiki](https://github.com/ccoolbaugh/FloWave.US/wiki) for instructions and tutorial links.
 
-The following video also demonstrates how to analyze the muscle contraction demo video. 
+The following video also demonstrates how to analyze the muscle contraction demo video.   
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=lehANYDmxTY
 " target="_blank"><img src="http://img.youtube.com/vi/lehANYDmxTY/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
